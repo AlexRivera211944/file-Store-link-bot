@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FileVault — Download</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --border: #1e1e2e;
+      --accent: #00f5a0;
+      --accent2: #00d9f5;
+      --text: #e8e8f0;
+      --muted: #5a5a7a;
+      --danger: #ff4444;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    /* Animated background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,245,160,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,245,160,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridMove 20s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes gridMove {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(40px); }
+    }
+
+    /* Glowing orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb1 { width: 400px; height: 400px; background: var(--accent); top: -100px; left: -100px; animation: float1 8s ease-in-out infinite; }
+    .orb2 { width: 300px; height: 300px; background: var(--accent2); bottom: -80px; right: -80px; animation: float2 10s ease-in-out infinite; }
+
+    @keyframes float1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(30px, 20px); } }
+    @keyframes float2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-20px, -30px); } }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 520px;
+      padding: 20px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Logo */
+    .logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo::before {
+      content: '';
+      width: 24px;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    /* File icon */
+    .file-icon-wrap {
+      width: 72px; height: 72px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      background: rgba(0,245,160,0.06);
+      margin-bottom: 24px;
+      position: relative;
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(0,245,160,0.2); }
+      50% { box-shadow: 0 0 0 12px rgba(0,245,160,0); }
+    }
+
+    /* File name */
+    .file-name {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    /* Meta tags */
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+
+    .tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .tag.green { border-color: rgba(0,245,160,0.3); color: var(--accent); background: rgba(0,245,160,0.05); }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 24px 0;
+    }
+
+    /* Stats row */
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Download button */
+    .btn-download {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 12px;
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: #0a0a0f;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-download::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 0; height: 0;
+      background: rgba(255,255,255,0.3);
+      border-radius: 50%;
+      transform: translate(-50%,-50%);
+      transition: width 0.5s, height 0.5s;
+    }
+
+    .btn-download:hover::after { width: 300px; height: 300px; }
+    .btn-download:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,245,160,0.3); }
+    .btn-download:active { transform: translateY(0); }
+
+    /* Telegram button */
+    .btn-telegram {
+      width: 100%;
+      padding: 13px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-family: 'Syne', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: border-color 0.2s, background 0.2s;
+      margin-top: 12px;
+    }
+    .btn-telegram:hover {
+      border-color: #2AABEE;
+      background: rgba(42,171,238,0.06);
+      color: #2AABEE;
+    }
+
+    /* Error state */
+    .error-card {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .error-icon { font-size: 48px; margin-bottom: 16px; }
+    .error-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+    .error-msg { color: var(--muted); font-size: 14px; }
+
+    /* Loading state */
+    .loader {
+      width: 40px; height: 40px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-text {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--muted);
+    }
+
+    .footer a { color: var(--accent); text-decoration: none; }
+
+    /* Expiry warning */
+    .expiry-bar {
+      margin-top: 16px;
+      padding: 10px 14px;
+      background: rgba(255,68,68,0.08);
+      border: 1px solid rgba(255,68,68,0.2);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--danger);
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+
+  <div class="container">
+    <div class="logo">FileVault</div>
+
+    <div class="card" id="card">
+      <!-- Loading state -->
+      <div id="loading" style="text-align:center; padding: 20px 0;">
+        <div class="loader"></div>
+        <div class="loading-text">FETCHING FILE...</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Powered by <a href="#">FileVault Bot</a> &bull; Secure File Sharing
+    </div>
+  </div>
+
+  <script>
+    // Parse file data from URL params or embedded JSON
+    // This page is served by Vercel API route which injects file data
+
+    async function loadFile() {
+      const params = new URLSearchParams(window.location.search);
+      const fileId = params.get('id');
+
+      if (!fileId) {
+        showError('No file ID provided.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/file-info?id=${fileId}`);
+        const data = await res.json();
+
+        if (!data.ok) {
+          showError(data.error || 'File not found or has been deleted.');
+          return;
+        }
+
+        renderFile(data.file);
+      } catch (e) {
+        showError('Failed to load file info. Please try again.');
+      }
+    }
+
+    function getFileIcon(type) {
+      const icons = {
+        document: '📄', photo: '🖼️', video: '🎬',
+        audio: '🎵', voice: '🎤'
+      };
+      return icons[type] || '📁';
+    }
+
+    function formatSize(bytes) {
+      if (!bytes) return 'Unknown';
+      const s = ['B','KB','MB','GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(1024));
+      return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${s[i]}`;
+    }
+
+    function formatDate(ts) {
+      return new Date(ts).toLocaleDateString('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    }
+
+    function renderFile(file) {
+      const expiryHtml = file.autoDeleteAt
+        ? `<div class="expiry-bar">⚠ Expires: ${formatDate(file.autoDeleteAt)}</div>`
+        : '';
+
+      const card = document.getElementById('card');
+      card.innerHTML = `
+        <div class="file-icon-wrap">${getFileIcon(file.type)}</div>
+        <div class="file-name">${escapeHtml(file.name)}</div>
+
+        <div class="meta">
+          <span class="tag green">${file.type.toUpperCase()}</span>
+          <span class="tag">${formatSize(file.size)}</span>
+          ${file.isPublic ? '<span class="tag green">🌐 PUBLIC</span>' : ''}
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-label">File Size</div>
+            <div class="stat-value">${formatSize(file.size)}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Uploaded</div>
+            <div class="stat-value">${formatDate(file.uploadedAt)}</div>
+          </div>
+        </div>
+
+        <a class="btn-download" href="/api/download?id=${file.fileId}" download>
+          ⬇ Download File
+        </a>
+        <a class="btn-telegram" href="https://t.me/${file.botUsername}?start=get_${file.fileId}" target="_blank">
+          ✈ Open in Telegram
+        </a>
+        ${expiryHtml}
+      `;
+    }
+
+    function showError(msg) {
+      document.getElementById('card').innerHTML = `
+        <div class="error-card">
+          <div class="error-icon">🔒</div>
+          <div class="error-title">File Unavailable</div>
+          <div class="error-msg">${msg}</div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    loadFile();
+  </script>
+</body>
+</html>
